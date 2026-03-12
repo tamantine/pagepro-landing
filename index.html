@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bruno | IA & Negócios</title>
+  <meta name="description" content="Desenvolvedor Python & Criador de Agentes de IA. Construindo o futuro com código e inteligência artificial." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ============================================
+       RESET & BASE
+    ============================================ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #080808;
+      --bg2: #0d0d0d;
+      --card: rgba(18, 18, 18, 0.85);
+      --card2: rgba(22, 22, 22, 0.9);
+      --neon: #00e676;
+      --neon2: #00c853;
+      --blue: #2979ff;
+      --blue2: #448aff;
+      --text: #ffffff;
+      --text2: #a0a0a0;
+      --text3: #606060;
+      --border: rgba(255,255,255,0.06);
+      --border2: rgba(255,255,255,0.1);
+      --glow-green: 0 0 20px rgba(0,230,118,0.4), 0 0 40px rgba(0,230,118,0.2);
+      --glow-blue: 0 0 20px rgba(41,121,255,0.4), 0 0 40px rgba(41,121,255,0.2);
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { text-decoration: none; color: inherit; }
+    img { display: block; }
+
+    /* ============================================
+       CANVAS PARTICLE BACKGROUND
+    ============================================ */
+    #particles-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ============================================
+       SCANLINE OVERLAY
+    ============================================ */
+    .scanlines {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.03) 2px,
+        rgba(0,0,0,0.03) 4px
+      );
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* ============================================
+       MAIN WRAPPER
+    ============================================ */
+    .wrapper {
+      position: relative;
+      z-index: 2;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 20px 60px;
+    }
+
+    /* ============================================
+       HERO SECTION
+    ============================================ */
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding-top: 60px;
+      padding-bottom: 40px;
+    }
+
+    /* --- Avatar --- */
+    .avatar-container {
+      position: relative;
+      width: 130px;
+      height: 130px;
+      margin-bottom: 28px;
+    }
+    .avatar-ring {
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      background: conic-gradient(from 0deg, var(--neon), var(--blue), var(--neon), var(--blue), var(--neon));
+      animation: spin-ring 4s linear infinite;
+      filter: blur(1px);
+    }
+    .avatar-ring-mask {
+      position: absolute;
+      inset: 3px;
+      border-radius: 50%;
+      background: var(--bg);
+    }
+    @keyframes spin-ring { to { transform: rotate(360deg); } }
+    .avatar-pulse {
+      position: absolute;
+      inset: -12px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,230,118,0.2);
+      animation: pulse-ring 2.5s ease-out infinite;
+    }
+    .avatar-pulse2 {
+      position: absolute;
+      inset: -22px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,230,118,0.1);
+      animation: pulse-ring 2.5s ease-out infinite 0.8s;
+    }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.9); opacity: 0.6; }
+      100% { transform: scale(1.2); opacity: 0; }
+    }
+    .avatar-img {
+      position: relative;
+      z-index: 2;
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: center top;
+    }
+    .avatar-online {
+      position: absolute;
+      bottom: 6px;
+      right: 6px;
+      z-index: 3;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--neon);
+      border: 3px solid var(--bg);
+      box-shadow: var(--glow-green);
+      animation: blink-dot 2s ease-in-out infinite;
+    }
+    @keyframes blink-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* --- Badge --- */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0,230,118,0.08);
+      border: 1px solid rgba(0,230,118,0.2);
+      border-radius: 99px;
+      padding: 5px 14px;
+      font-size: 11px;
+      font-family: 'Roboto Mono', monospace;
+      color: var(--neon);
+      letter-spacing: 0.08em;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+    }
+    .status-badge-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--neon);
+      animation: blink-dot 1.5s infinite;
+    }
+
+    /* --- Name --- */
+    .hero-name {
+      font-size: clamp(26px, 7vw, 36px);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-bottom: 14px;
+    }
+    .hero-name .accent {
+      background: linear-gradient(90deg, var(--neon), var(--blue2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 12px rgba(0,230,118,0.4));
+    }
+
+    /* --- Typing --- */
+    .hero-tag {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 12px;
+      color: var(--blue2);
+      letter-spacing: 0.06em;
+      margin-bottom: 14px;
+    }
+    .hero-sub {
+      font-size: 14px;
+      color: var(--text2);
+      line-height: 1.7;
+      max-width: 360px;
+      margin-bottom: 32px;
+    }
+
+    /* --- Buttons --- */
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+    }
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 16px 24px;
+      border-radius: 16px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+      position: relative;
+      overflow: hidden;
+      border: none;
+      outline: none;
+    }
+    .btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .btn:hover::after { opacity: 1; }
+    .btn:active { transform: scale(0.97); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--neon), var(--blue));
+      color: #080808;
+      box-shadow: 0 4px 24px rgba(0,230,118,0.3);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px) scale(1.01);
+      box-shadow: 0 8px 32px rgba(0,230,118,0.5);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid rgba(41,121,255,0.4);
+      backdrop-filter: blur(10px);
+    }
+    .btn-secondary:hover {
+      background: rgba(41,121,255,0.08);
+      border-color: var(--blue);
+      transform: translateY(-2px);
+      box-shadow: var(--glow-blue);
+    }
+
+    /* ============================================
+       SECTION TITLES
+    ============================================ */
+    .section-label {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.2em;
+      color: var(--blue2);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .section-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-title span { font-size: 22px; }
+
+    /* ============================================
+       DIVIDER
+    ============================================ */
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(0,230,118,0.3), rgba(41,121,255,0.3), transparent);
+      margin: 40px 0;
+    }
+
+    /* ============================================
+       STATS ROW
+    ============================================ */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px 12px;
+      text-align: center;
+      backdrop-filter: blur(20px);
+      transition: all 0.3s;
+    }
+    .stat-card:hover {
+      border-color: rgba(0,230,118,0.3);
+      box-shadow: 0 0 20px rgba(0,230,118,0.1);
+      transform: translateY(-3px);
+    }
+    .stat-num {
+      font-size: 22px;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--neon), var(--blue2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-label {
+      font-size: 10px;
+      color: var(--text3);
+      font-family: 'Roboto Mono', monospace;
+      letter-spacing: 0.05em;
+      margin-top: 4px;
+    }
+
+    /* ============================================
+       LAB SECTION (cards)
+    ============================================ */
+    .lab-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 40px;
+    }
+    .lab-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 20px;
+      backdrop-filter: blur(20px);
+      transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+      transform-style: preserve-3d;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    .lab-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--neon), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .lab-card:hover::before { opacity: 1; }
+    .lab-card:hover {
+      border-color: rgba(0,230,118,0.2);
+      box-shadow: 0 0 30px rgba(0,230,118,0.08), 0 20px 40px rgba(0,0,0,0.4);
+      transform: translateY(-4px) rotateX(2deg);
+    }
+    .lab-card.yellow:hover {
+      border-color: rgba(255,193,7,0.3);
+      box-shadow: 0 0 30px rgba(255,193,7,0.08), 0 20px 40px rgba(0,0,0,0.4);
+    }
+    .lab-card.yellow::before {
+      background: linear-gradient(90deg, transparent, #ffc107, transparent);
+    }
+    .lab-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+    .lab-card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .lab-card-sub {
+      font-size: 11px;
+      color: var(--text3);
+      font-family: 'Roboto Mono', monospace;
+      margin-bottom: 10px;
+    }
+    .lab-card-desc {
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.6;
+    }
+    .lab-card-footer {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .lab-progress {
+      flex: 1;
+      height: 3px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .lab-progress-bar {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--neon), var(--blue));
+      animation: progress-anim 2s ease-out forwards;
+      transform-origin: left;
+    }
+    .lab-progress-bar.yellow-bar {
+      background: linear-gradient(90deg, #ffc107, #ff9800);
+    }
+    @keyframes progress-anim {
+      from { width: 0; }
+    }
+    .lab-progress-text {
+      font-size: 10px;
+      font-family: 'Roboto Mono', monospace;
+      color: var(--text3);
+    }
+
+    /* Badge */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 99px;
+      font-size: 10px;
+      font-weight: 700;
+      font-family: 'Roboto Mono', monospace;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .badge-green {
+      background: rgba(0,230,118,0.1);
+      color: var(--neon);
+      border: 1px solid rgba(0,230,118,0.25);
+      box-shadow: 0 0 10px rgba(0,230,118,0.15);
+    }
+    .badge-yellow {
+      background: rgba(255,193,7,0.1);
+      color: #ffc107;
+      border: 1px solid rgba(255,193,7,0.25);
+      box-shadow: 0 0 10px rgba(255,193,7,0.15);
+    }
+    .badge-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      animation: blink-dot 1.5s infinite;
+    }
+    .badge-dot.green { background: var(--neon); }
+    .badge-dot.yellow { background: #ffc107; }
+
+    /* ============================================
+       PHOTO GALLERY (Mosaic)
+    ============================================ */
+    .gallery-section { margin-bottom: 40px; }
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 220px 160px;
+      gap: 10px;
+    }
+    .gallery-item {
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      position: relative;
+      transition: all 0.4s;
+      cursor: pointer;
+    }
+    .gallery-item:first-child {
+      grid-row: 1 / 3;
+    }
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      transition: transform 0.5s;
+    }
+    .gallery-item:hover img { transform: scale(1.06); }
+    .gallery-item:hover {
+      border-color: rgba(0,230,118,0.3);
+      box-shadow: 0 0 20px rgba(0,230,118,0.1);
+    }
+    .gallery-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s;
+      display: flex;
+      align-items: flex-end;
+      padding: 12px;
+    }
+    .gallery-item:hover .gallery-overlay { opacity: 1; }
+    .gallery-overlay-text {
+      font-size: 11px;
+      font-family: 'Roboto Mono', monospace;
+      color: var(--neon);
+      letter-spacing: 0.06em;
+    }
+
+    /* ============================================
+       ARSENAL (Links)
+    ============================================ */
+    .arsenal {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 40px;
+    }
+    .link-btn {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 18px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      backdrop-filter: blur(20px);
+      transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    .link-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, rgba(0,230,118,0.03), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .link-btn:hover::before { opacity: 1; }
+    .link-btn:hover {
+      border-color: rgba(41,121,255,0.3);
+      background: rgba(22,22,22,0.95);
+      transform: translateX(4px);
+      box-shadow: 0 0 20px rgba(41,121,255,0.08);
+    }
+    .link-btn-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.04);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+      border: 1px solid var(--border);
+      transition: all 0.3s;
+    }
+    .link-btn:hover .link-btn-icon {
+      background: rgba(41,121,255,0.1);
+      border-color: rgba(41,121,255,0.3);
+    }
+    .link-btn-content { flex: 1; }
+    .link-btn-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+    .link-btn-sub {
+      font-size: 11px;
+      color: var(--text3);
+      font-family: 'Roboto Mono', monospace;
+    }
+    .link-btn-arrow {
+      color: var(--text3);
+      transition: all 0.3s;
+      flex-shrink: 0;
+    }
+    .link-btn:hover .link-btn-arrow {
+      color: var(--blue2);
+      transform: translateX(4px);
+    }
+    .link-btn-arrow svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* ============================================
+       TERMINAL BLOCK
+    ============================================ */
+    .terminal {
+      background: #0d0d0d;
+      border: 1px solid rgba(0,230,118,0.15);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 40px;
+      font-family: 'Roboto Mono', monospace;
+      position: relative;
+      overflow: hidden;
+    }
+    .terminal::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--neon), transparent);
+      opacity: 0.4;
+    }
+    .terminal-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+    .term-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+    .term-dot.red { background: #ff5f56; }
+    .term-dot.yellow { background: #ffbd2e; }
+    .term-dot.green { background: #27c93f; }
+    .term-title {
+      font-size: 11px;
+      color: var(--text3);
+      margin-left: 8px;
+      letter-spacing: 0.05em;
+    }
+    .term-line {
+      font-size: 12px;
+      line-height: 1.8;
+      color: var(--text2);
+    }
+    .term-line .prompt { color: var(--neon); }
+    .term-line .cmd { color: #fff; }
+    .term-line .out { color: var(--text3); }
+    .term-line .ok { color: var(--neon); }
+    .term-line .yellow { color: #ffc107; }
+    .term-cursor {
+      display: inline-block;
+      width: 8px;
+      height: 14px;
+      background: var(--neon);
+      margin-left: 2px;
+      vertical-align: text-bottom;
+      animation: blink-cursor 1s step-end infinite;
+    }
+    @keyframes blink-cursor { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+
+    /* ============================================
+       FOOTER
+    ============================================ */
+    .footer {
+      padding: 32px 0 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    .footer-text {
+      text-align: center;
+      font-size: 13px;
+      color: var(--text3);
+      line-height: 1.7;
+      max-width: 340px;
+    }
+    .socials {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+    }
+    .social-link {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+      color: var(--text3);
+    }
+    .social-link:hover {
+      color: var(--neon);
+      border-color: rgba(0,230,118,0.3);
+      box-shadow: var(--glow-green);
+      transform: translateY(-3px);
+    }
+    .social-link svg { width: 20px; height: 20px; }
+    .footer-copy {
+      font-size: 11px;
+      color: var(--text3);
+      font-family: 'Roboto Mono', monospace;
+      letter-spacing: 0.04em;
+    }
+    .footer-copy span { color: var(--neon); }
+
+    /* ============================================
+       SCROLL REVEAL
+    ============================================ */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+
+    /* ============================================
+       RESPONSIVE
+    ============================================ */
+    @media (min-width: 520px) {
+      .wrapper { padding: 0 24px 80px; }
+      .btn-group { flex-direction: row; }
+      .btn { width: auto; flex: 1; }
+    }
+
+    /* ============================================
+       GLOW GRADIENT BG BLOBS
+    ============================================ */
+    .bg-blob {
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(80px);
+      opacity: 0.07;
+    }
+    .bg-blob-1 {
+      width: 400px;
+      height: 400px;
+      background: var(--neon);
+      top: -100px;
+      left: -100px;
+      animation: drift 12s ease-in-out infinite alternate;
+    }
+    .bg-blob-2 {
+      width: 300px;
+      height: 300px;
+      background: var(--blue);
+      bottom: 200px;
+      right: -80px;
+      animation: drift 10s ease-in-out infinite alternate-reverse;
+    }
+    @keyframes drift {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(30px, 40px) scale(1.1); }
+    }
+
+    /* ============================================
+       WHATSAPP FLOAT BTN
+    ============================================ */
+    .wpp-float {
+      position: fixed;
+      bottom: 24px;
+      right: 20px;
+      z-index: 999;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #25d366, #128c7e);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 24px rgba(37,211,102,0.4);
+      transition: all 0.3s;
+      animation: wpp-pulse 3s ease-in-out infinite;
+    }
+    .wpp-float:hover {
+      transform: scale(1.1);
+      box-shadow: 0 8px 32px rgba(37,211,102,0.6);
+    }
+    .wpp-float svg { width: 28px; height: 28px; fill: white; }
+    @keyframes wpp-pulse {
+      0%, 100% { box-shadow: 0 4px 24px rgba(37,211,102,0.4), 0 0 0 0 rgba(37,211,102,0.2); }
+      50% { box-shadow: 0 4px 24px rgba(37,211,102,0.4), 0 0 0 12px rgba(37,211,102,0); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Particles Canvas -->
+<canvas id="particles-canvas"></canvas>
+
+<!-- Scanlines -->
+<div class="scanlines"></div>
+
+<!-- Background Blobs -->
+<div class="bg-blob bg-blob-1"></div>
+<div class="bg-blob bg-blob-2"></div>
+
+<!-- WhatsApp Float Button -->
+<a class="wpp-float" href="https://wa.me/5515998629738" target="_blank" rel="noopener" aria-label="WhatsApp">
+  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+  </svg>
+</a>
+
+<!-- Main Content -->
+<div class="wrapper">
+
+  <!-- ====== HERO ====== -->
+  <header class="hero">
+    <div class="avatar-container">
+      <div class="avatar-ring"></div>
+      <div class="avatar-ring-mask"></div>
+      <div class="avatar-pulse"></div>
+      <div class="avatar-pulse2"></div>
+      <!-- FOTO PRINCIPAL: Retrato profissional -->
+      <img class="avatar-img" src="./public/images/foto de perfil.png" alt="Bruno - IA & Negócios" />
+      <div class="avatar-online"></div>
+    </div>
+
+    <div class="status-badge">
+      <span class="status-badge-dot"></span>
+      Disponível para projetos
+    </div>
+
+    <h1 class="hero-name">Bruno | <span class="accent">IA & Negócios</span></h1>
+
+    <p class="hero-tag">&lt; Python Dev &amp; AI Agent Builder /&gt;</p>
+
+    <p class="hero-sub">
+      Construindo o futuro com IA e Código. Acompanhe a mudança de vida aos 25 anos testando o que funciona no digital.
+    </p>
+
+    <div class="btn-group">
+      <a class="btn btn-primary" href="https://www.tiktok.com/@zonaproibida2" target="_blank" rel="noopener">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-2.54.03-5.08.04-7.62.01-4.34.02-8.68.02-13.02z"/>
+        </svg>
+        🎬 Acompanhe no TikTok
+      </a>
+      <a class="btn btn-secondary" href="https://wa.me/5515998629738" target="_blank" rel="noopener">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+          <polyline points="22,6 12,13 2,6"/>
+        </svg>
+        ✉️ Fale Comigo
+      </a>
+    </div>
+  </header>
+
+  <!-- ====== STATS ====== -->
+  <div class="reveal">
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-num">25</div>
+        <div class="stat-label">anos</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">2+</div>
+        <div class="stat-label">Projetos IA</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">100%</div>
+        <div class="stat-label">Open Build</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ====== GALLERY ====== -->
+  <section class="gallery-section reveal reveal-delay-1">
+    <p class="section-label">// visuals</p>
+    <h2 class="section-title"><span>📸</span> Fotos Criadas com IA</h2>
+    <p class="hero-sub" style="margin-bottom: 20px;">Aprenda a criar fotos profissionais com IA</p>
+    <div class="gallery-grid">
+      <!-- Imagem destaque - AI hands -->
+      <div class="gallery-item">
+        <img src="./public/images/Imagine_prompt_a_highresolution_photorealistic_doc_delpmaspu.png" alt="Bruno codando com IA" />
+        <div class="gallery-overlay">
+          <span class="gallery-overlay-text">// IA em ação</span>
+        </div>
+      </div>
+      <!-- Portrait -->
+      <div class="gallery-item">
+        <img src="./public/images/foto de perfil.png" alt="Bruno - Perfil profissional" />
+        <div class="gallery-overlay">
+          <span class="gallery-overlay-text">// profile.jpg</span>
+        </div>
+      </div>
+      <!-- AI Workflow -->
+      <div class="gallery-item">
+        <img src="./public/images/Imagine_prompt_a_hyperrealistic_cinematic_portrait_delpmaspu.png" alt="Bruno analisando AI Workflow" />
+        <div class="gallery-overlay">
+          <span class="gallery-overlay-text">// workflow_ai.py</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ====== LAB ====== -->
+  <section class="reveal reveal-delay-1">
+    <p class="section-label">// projects_status.json</p>
+    <h2 class="section-title"><span>🧪</span> O Laboratório</h2>
+
+    <div class="lab-grid">
+      <!-- Card 1 -->
+      <a class="lab-card" href="https://wa.me/5515998629738" target="_blank" rel="noopener">
+        <div class="lab-card-header">
+          <h3 class="lab-card-title">Canal Dark (zonaproibida2)</h3>
+          <span class="badge badge-green">
+            <span class="badge-dot green"></span>Escalando
+          </span>
+        </div>
+        <p class="lab-card-sub">@zonaproibida2 · TikTok</p>
+        <p class="lab-card-desc">Automação e geração de vídeos com IA. Testando o limite de crescimento orgânico com scripts Python.</p>
+        <div class="lab-card-footer">
+          <div class="lab-progress"><div class="lab-progress-bar" style="width:82%"></div></div>
+          <span class="lab-progress-text">82%</span>
+        </div>
+      </a>
+
+      <!-- Card 2 -->
+      <a class="lab-card yellow" href="https://wa.me/5515998629738" target="_blank" rel="noopener">
+        <div class="lab-card-header">
+          <h3 class="lab-card-title">Agente de Gestão (Terminal)</h3>
+          <span class="badge badge-yellow">
+            <span class="badge-dot yellow"></span>Em Andamento
+          </span>
+        </div>
+        <p class="lab-card-sub">Python · CLI Agent</p>
+        <p class="lab-card-desc">Sócio de IA desenvolvido em Python para gestão de foco, tarefas e produtividade no terminal.</p>
+        <div class="lab-card-footer">
+          <div class="lab-progress"><div class="lab-progress-bar yellow-bar" style="width:45%"></div></div>
+          <span class="lab-progress-text">45%</span>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ====== TERMINAL ====== -->
+  <section class="reveal reveal-delay-2">
+    <p class="section-label">// runtime_log</p>
+    <h2 class="section-title"><span>⚡</span> Stack Atual</h2>
+    <div class="terminal">
+      <div class="terminal-bar">
+        <span class="term-dot red"></span>
+        <span class="term-dot yellow"></span>
+        <span class="term-dot green"></span>
+        <span class="term-title">bruno@ia-negocios ~ terminal</span>
+      </div>
+      <div class="term-line"><span class="prompt">❯</span> <span class="cmd">python --version</span></div>
+      <div class="term-line"><span class="out">Python 3.12.0</span></div>
+      <div class="term-line"><span class="prompt">❯</span> <span class="cmd">pip list | grep ai</span></div>
+      <div class="term-line"><span class="ok">✔ langchain 0.3.x</span></div>
+      <div class="term-line"><span class="ok">✔ openai 1.x</span></div>
+      <div class="term-line"><span class="ok">✔ crewai 0.80.x</span></div>
+      <div class="term-line"><span class="prompt">❯</span> <span class="cmd">echo $STATUS</span></div>
+      <div class="term-line"><span class="yellow">🔥 BUILDING IN PUBLIC — 2025</span></div>
+      <div class="term-line"><span class="prompt">❯</span> <span class="cmd">_<span class="term-cursor"></span></span></div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ====== ARSENAL ====== -->
+  <section class="reveal reveal-delay-2">
+    <p class="section-label">// links.config</p>
+    <h2 class="section-title"><span>🛠️</span> O Arsenal</h2>
+
+    <div class="arsenal">
+      <a class="link-btn" href="https://wa.me/5515998629738" target="_blank" rel="noopener">
+        <div class="link-btn-icon">🎙️</div>
+        <div class="link-btn-content">
+          <div class="link-btn-title">Clonagem de Voz</div>
+          <div class="link-btn-sub">// alternativas gratuitas ao ElevenLabs</div>
+        </div>
+        <div class="link-btn-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </a>
+
+      <a class="link-btn" href="https://wa.me/5515998629738" target="_blank" rel="noopener">
+        <div class="link-btn-icon">🎨</div>
+        <div class="link-btn-content">
+          <div class="link-btn-title">Geração de Imagens Pro</div>
+          <div class="link-btn-sub">// open source · sem custo</div>
+        </div>
+        <div class="link-btn-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </a>
+
+      <a class="link-btn" href="https://wa.me/5515998629738" target="_blank" rel="noopener">
+        <div class="link-btn-icon">💻</div>
+        <div class="link-btn-content">
+          <div class="link-btn-title">Script Python para Automação</div>
+          <div class="link-btn-sub">// código pronto para usar</div>
+        </div>
+        <div class="link-btn-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </a>
+
+      <a class="link-btn" href="https://wa.me/5515998629738" target="_blank" rel="noopener">
+        <div class="link-btn-icon">🤖</div>
+        <div class="link-btn-content">
+          <div class="link-btn-title">Criar Agentes de IA</div>
+          <div class="link-btn-sub">// aprenda do zero comigo</div>
+        </div>
+        <div class="link-btn-arrow">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- ====== FOOTER ====== -->
+  <footer class="footer reveal reveal-delay-3">
+    <p class="footer-text">
+      Dividindo o tempo entre a gestão do negócio físico e madrugadas codando. Feito com muito café e Inteligência Artificial.
+    </p>
+
+    <div class="socials">
+      <!-- Instagram -->
+      <a class="social-link" href="https://wa.me/5515998629738" target="_blank" rel="noopener" aria-label="Instagram">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+          <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+        </svg>
+      </a>
+      <!-- GitHub -->
+      <a class="social-link" href="https://wa.me/5515998629738" target="_blank" rel="noopener" aria-label="GitHub">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+        </svg>
+      </a>
+      <!-- TikTok -->
+      <a class="social-link" href="https://www.tiktok.com/@zonaproibida2" target="_blank" rel="noopener" aria-label="TikTok">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-2.54.03-5.08.04-7.62.01-4.34.02-8.68.02-13.02z"/>
+        </svg>
+      </a>
+      <!-- WhatsApp -->
+      <a class="social-link" href="https://wa.me/5515998629738" target="_blank" rel="noopener" aria-label="WhatsApp">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+        </svg>
+      </a>
+    </div>
+
+    <p class="footer-copy">© 2025 Bruno · <span>IA & Negócios</span> · build_v2.0</p>
+  </footer>
+
+</div><!-- /wrapper -->
+
+<script>
+/* =============================================
+   PARTICLE SYSTEM
+============================================= */
+(function() {
+  const canvas = document.getElementById('particles-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [], mouse = { x: -999, y: -999 };
+  const NUM = 70;
+  const COLORS = ['rgba(0,230,118,', 'rgba(41,121,255,', 'rgba(68,138,255,'];
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+  window.addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+
+  function rand(a, b) { return Math.random() * (b - a) + a; }
+
+  function Particle() {
+    this.x = rand(0, W);
+    this.y = rand(0, H);
+    this.vx = rand(-0.3, 0.3);
+    this.vy = rand(-0.3, 0.3);
+    this.r = rand(0.8, 2.2);
+    this.alpha = rand(0.2, 0.7);
+    this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+  }
+  Particle.prototype.update = function() {
+    this.x += this.vx;
+    this.y += this.vy;
+    if (this.x < 0 || this.x > W) this.vx *= -1;
+    if (this.y < 0 || this.y > H) this.vy *= -1;
+  };
+  Particle.prototype.draw = function() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+    ctx.fillStyle = this.color + this.alpha + ')';
+    ctx.fill();
+  };
+
+  for (let i = 0; i < NUM; i++) particles.push(new Particle());
+
+  function drawLines() {
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 120) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = `rgba(0,230,118,${0.07 * (1 - dist/120)})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+      // Mouse interaction
+      const mx = particles[i].x - mouse.x;
+      const my = particles[i].y - mouse.y;
+      const md = Math.sqrt(mx*mx + my*my);
+      if (md < 150) {
+        ctx.beginPath();
+        ctx.moveTo(particles[i].x, particles[i].y);
+        ctx.lineTo(mouse.x, mouse.y);
+        ctx.strokeStyle = `rgba(41,121,255,${0.15 * (1 - md/150)})`;
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+      }
+    }
+  }
+
+  function loop() {
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => { p.update(); p.draw(); });
+    drawLines();
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+
+/* =============================================
+   SCROLL REVEAL
+============================================= */
+(function() {
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+  reveals.forEach(el => observer.observe(el));
+})();
+
+/* =============================================
+   MAGNETIC BUTTONS
+============================================= */
+(function() {
+  document.querySelectorAll('.btn').forEach(btn => {
+    btn.addEventListener('mousemove', function(e) {
+      const rect = this.getBoundingClientRect();
+      const x = e.clientX - rect.left - rect.width / 2;
+      const y = e.clientY - rect.top - rect.height / 2;
+      this.style.transform = `translate(${x * 0.12}px, ${y * 0.12}px)`;
+    });
+    btn.addEventListener('mouseleave', function() {
+      this.style.transform = '';
+    });
+  });
+})();
+
+/* =============================================
+   3D CARD TILT
+============================================= */
+(function() {
+  document.querySelectorAll('.lab-card').forEach(card => {
+    card.addEventListener('mousemove', function(e) {
+      const rect = this.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const rotateX = (y - centerY) / centerY * -6;
+      const rotateY = (x - centerX) / centerX * 6;
+      this.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px)`;
+    });
+    card.addEventListener('mouseleave', function() {
+      this.style.transform = '';
+    });
+  });
+})();
+
+/* =============================================
+   PROGRESS BARS ANIMATION ON SCROLL
+============================================= */
+(function() {
+  const bars = document.querySelectorAll('.lab-progress-bar');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const targetWidth = entry.target.style.width;
+        entry.target.style.setProperty('--target-w', targetWidth);
+      }
+    });
+  }, { threshold: 0.5 });
+  bars.forEach(bar => observer.observe(bar));
+})();
+</script>
+
+</body>
+</html>
